@@ -1,28 +1,26 @@
 package com.example.crousflow
 
 import android.os.Bundle
+import androidx.activity.compose.setContent
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.activity.enableEdgeToEdge
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
-import com.example.crousflow.ui.theme.CrousFlowTheme
+import androidx.compose.runtime.*
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        enableEdgeToEdge()
         setContent {
-            CrousFlowTheme {
-                Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    Greeting(
-                        name = "Android",
-                        modifier = Modifier.padding(innerPadding)
+            val navController = rememberNavController()
+            NavHost(navController = navController, startDestination = "accueil") {
+                composable("accueil") { AccueilScreen(navController) }
+                composable("filtre") { FiltreScreen(navController) }
+                composable("ficheRU/{ruName}") { backStackEntry ->
+                    FicheRUScreen(
+                        navController = navController,
+                        ruName = backStackEntry.arguments?.getString("ruName") ?: ""
                     )
                 }
             }
@@ -30,18 +28,4 @@ class MainActivity : ComponentActivity() {
     }
 }
 
-@Composable
-fun Greeting(name: String, modifier: Modifier = Modifier) {
-    Text(
-        text = "Hello $name!",
-        modifier = modifier
-    )
-}
 
-@Preview(showBackground = true)
-@Composable
-fun GreetingPreview() {
-    CrousFlowTheme {
-        Greeting("Android")
-    }
-}
