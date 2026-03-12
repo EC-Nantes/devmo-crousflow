@@ -12,23 +12,20 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
-import androidx.compose.runtime.saveable.rememberSaveable
 
 @Composable
 fun FiltreScreen(navController: NavController) {
 
-    // États des boutons sélectionnés
-    var proximite by rememberSaveable { mutableStateOf(false) }
-    var moinsDattente by rememberSaveable { mutableStateOf(false) }
-    var favoris by rememberSaveable { mutableStateOf(false) }
-
-    var vegetarien by rememberSaveable { mutableStateOf(false) }
-    var sansGluten by rememberSaveable { mutableStateOf(false) }
-    var halal by rememberSaveable { mutableStateOf(false) }
-
-    var faible by rememberSaveable { mutableStateOf(false) }
-    var modere by rememberSaveable { mutableStateOf(false) }
-    var tous by rememberSaveable { mutableStateOf(true) }
+    // Lire l'état global — les filtres déjà sélectionnés restent visibles
+    var proximite by remember { mutableStateOf(FiltreState.proximite.value) }
+    var moinsDattente by remember { mutableStateOf(FiltreState.moinsDattente.value) }
+    var favoris by remember { mutableStateOf(FiltreState.favoris.value) }
+    var vegetarien by remember { mutableStateOf(FiltreState.vegetarien.value) }
+    var sansGluten by remember { mutableStateOf(FiltreState.sansGluten.value) }
+    var halal by remember { mutableStateOf(FiltreState.halal.value) }
+    var faible by remember { mutableStateOf(FiltreState.faible.value) }
+    var modere by remember { mutableStateOf(FiltreState.modere.value) }
+    var tous by remember { mutableStateOf(FiltreState.tous.value) }
 
     Column(
         modifier = Modifier
@@ -67,15 +64,10 @@ fun FiltreScreen(navController: NavController) {
         ) {
 
             // ── TRIER PAR ──
-            Text(
-                "TRIER PAR",
-                fontSize = 11.sp,
-                fontWeight = FontWeight.Bold,
-                color = TextGris,
-                letterSpacing = 1.sp
-            )
+            Text("TRIER PAR", fontSize = 11.sp, fontWeight = FontWeight.Bold,
+                color = TextGris, letterSpacing = 1.sp)
             Spacer(modifier = Modifier.height(10.dp))
-            Row(modifier = Modifier.fillMaxWidth()) {
+            Row {
                 ChipFiltre("📍 Proximité", proximite) { proximite = !proximite }
                 Spacer(modifier = Modifier.width(8.dp))
                 ChipFiltre("🔵 Moins d'attente", moinsDattente) { moinsDattente = !moinsDattente }
@@ -86,15 +78,10 @@ fun FiltreScreen(navController: NavController) {
             Spacer(modifier = Modifier.height(20.dp))
 
             // ── RÉGIME ALIMENTAIRE ──
-            Text(
-                "RÉGIME ALIMENTAIRE",
-                fontSize = 11.sp,
-                fontWeight = FontWeight.Bold,
-                color = TextGris,
-                letterSpacing = 1.sp
-            )
+            Text("RÉGIME ALIMENTAIRE", fontSize = 11.sp, fontWeight = FontWeight.Bold,
+                color = TextGris, letterSpacing = 1.sp)
             Spacer(modifier = Modifier.height(10.dp))
-            Row(modifier = Modifier.fillMaxWidth()) {
+            Row {
                 ChipFiltre("🌿 Végétarien", vegetarien) { vegetarien = !vegetarien }
                 Spacer(modifier = Modifier.width(8.dp))
                 ChipFiltre("Sans gluten", sansGluten) { sansGluten = !sansGluten }
@@ -105,14 +92,9 @@ fun FiltreScreen(navController: NavController) {
             Spacer(modifier = Modifier.height(20.dp))
 
             // ── AFFLUENCE MAX ──
-            Text(
-                "Affluence Max",
-                fontSize = 14.sp,
-                fontWeight = FontWeight.Bold,
-                color = TextSombre
-            )
+            Text("Affluence Max", fontSize = 14.sp, fontWeight = FontWeight.Bold, color = TextSombre)
             Spacer(modifier = Modifier.height(10.dp))
-            Row(modifier = Modifier.fillMaxWidth()) {
+            Row {
                 ChipFiltreColor("🟢 Faible (< 5 min)", faible, VertAffluence) {
                     faible = !faible
                     if (faible) { modere = false; tous = false }
@@ -136,29 +118,21 @@ fun FiltreScreen(navController: NavController) {
                 .fillMaxWidth()
                 .padding(16.dp)
         ) {
-            // Bouton Appliquer
             Button(
                 onClick = {
-                    // Construire la liste des filtres sélectionnés
-                    val filtresChoisis = mutableListOf<String>()
-                    if (proximite) filtresChoisis.add("Proximité")
-                    if (moinsDattente) filtresChoisis.add("Moins d'attente")
-                    if (vegetarien) filtresChoisis.add("Végétarien")
-                    if (sansGluten) filtresChoisis.add("Sans gluten")
-                    if (halal) filtresChoisis.add("Halal")
-                    if (faible) filtresChoisis.add("Faible")
-                    if (modere) filtresChoisis.add("Bondé")
-
-                    // Envoyer les filtres à l'écran Accueil
-                    navController.previousBackStackEntry
-                        ?.savedStateHandle
-                        ?.set("filtres_appliques", filtresChoisis)
-
+                    // Sauvegarder dans l'état global
+                    FiltreState.proximite.value = proximite
+                    FiltreState.moinsDattente.value = moinsDattente
+                    FiltreState.favoris.value = favoris
+                    FiltreState.vegetarien.value = vegetarien
+                    FiltreState.sansGluten.value = sansGluten
+                    FiltreState.halal.value = halal
+                    FiltreState.faible.value = faible
+                    FiltreState.modere.value = modere
+                    FiltreState.tous.value = tous
                     navController.popBackStack()
                 },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(50.dp),
+                modifier = Modifier.fillMaxWidth().height(50.dp),
                 colors = ButtonDefaults.buttonColors(containerColor = BleuPrimaire),
                 shape = RoundedCornerShape(12.dp)
             ) {
@@ -167,16 +141,15 @@ fun FiltreScreen(navController: NavController) {
 
             Spacer(modifier = Modifier.height(8.dp))
 
-            // Bouton Réinitialiser
             OutlinedButton(
                 onClick = {
+                    // Réinitialiser tout
+                    FiltreState.reinitialiser()
                     proximite = false; moinsDattente = false; favoris = false
                     vegetarien = false; sansGluten = false; halal = false
                     faible = false; modere = false; tous = true
                 },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(50.dp),
+                modifier = Modifier.fillMaxWidth().height(50.dp),
                 shape = RoundedCornerShape(12.dp)
             ) {
                 Text("Réinitialiser", fontSize = 16.sp, color = TextSombre)
