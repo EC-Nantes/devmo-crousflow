@@ -12,6 +12,10 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.foundation.Image
+import androidx.compose.ui.res.painterResource
 
 data class MenuItem(
     val nom: String,
@@ -42,9 +46,7 @@ fun FicheRUScreen(navController: NavController, ruName: String) {
 
     var ongletSelectionne by remember { mutableStateOf("Entrées") }
     val onglets = listOf("Entrées", "Plats", "Desserts")
-
-    // Données selon le RU sélectionné
-    val ru = listeRU.find { it.id == ruName } ?: listeRU[0]
+    val ru = tousLesRU.find { it.id == ruName } ?: tousLesRU[0]
 
     Column(
         modifier = Modifier
@@ -75,65 +77,95 @@ fun FicheRUScreen(navController: NavController, ruName: String) {
             )
         }
 
+        // ── CONTENU SCROLLABLE ──
         Column(
             modifier = Modifier
                 .weight(1f)
                 .verticalScroll(rememberScrollState())
         ) {
 
-            // ── INFO RU ──
-            Column(modifier = Modifier.padding(16.dp)) {
+            // ── PHOTO + GRAPHE CÔTE À CÔTE ──
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(180.dp)  // ← plus grand
+                    .padding(16.dp),
+                verticalAlignment = Alignment.Top
+            ) {
+                // Photo placeholder grande
+                Image(
+                    painter = painterResource(id = ru.imageRes),
+                    contentDescription = ru.nom,
+                    contentScale = ContentScale.Crop,
+                    modifier = Modifier
+                        .width(160.dp)
+                        .fillMaxHeight()
+                        .clip(RoundedCornerShape(8.dp))
+                )
 
-                Row(verticalAlignment = Alignment.Top) {
-                    // Photo placeholder
-                    Box(
-                        modifier = Modifier
-                            .size(90.dp)
-                            .background(Color(0xFFE0E0E0), RoundedCornerShape(8.dp))
+                Spacer(modifier = Modifier.width(12.dp))
+
+                // Colonne droite : nom + graphe
+                Column(
+                    modifier = Modifier
+                        .weight(1f)
+                        .fillMaxHeight(),
+                    verticalArrangement = Arrangement.SpaceBetween  // ← espace bien réparti
+                ) {
+                    Text(
+                        ru.nom,
+                        fontSize = 18.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = TextSombre
                     )
-                    Spacer(modifier = Modifier.width(12.dp))
-                    Column {
-                        Text(
-                            ru.nom,
-                            fontSize = 18.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = TextSombre
-                        )
-                        Spacer(modifier = Modifier.height(8.dp))
-                        // Jauges affluence
-                        Text("Affluence en temps réel", fontSize = 11.sp, color = TextGris)
-                        Spacer(modifier = Modifier.height(4.dp))
-                        JaugesAffluence()
-                    }
+                    Text(
+                        "Affluence en temps réel",
+                        fontSize = 11.sp,
+                        color = TextGris
+                    )
+                    JaugesAffluence()  // ← graphe en bas de la colonne
                 }
+            }
 
-                Spacer(modifier = Modifier.height(12.dp))
+            // ── INFOS ──
+            Column(modifier = Modifier.padding(horizontal = 16.dp)) {
                 Text("🍴 Cuisine Française", fontSize = 13.sp, color = TextGris)
                 Spacer(modifier = Modifier.height(4.dp))
                 Text("📍 LOCALISATION", fontSize = 13.sp, color = TextGris)
 
                 Spacer(modifier = Modifier.height(12.dp))
 
-                // Carte mini
+                // ── CARTE GRANDE ──
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(80.dp)
-                        .background(Color(0xFFE8EAF6), RoundedCornerShape(8.dp)),
+                        .height(150.dp)
+                        .background(Color(0xFFE8EAF6), RoundedCornerShape(12.dp)),
                     contentAlignment = Alignment.Center
                 ) {
                     Text("🗺 ${ru.nom}", color = BleuPrimaire, fontSize = 13.sp)
                 }
 
                 Spacer(modifier = Modifier.height(12.dp))
-                Text("4 Rte de la Jonelière, 44300 Nantes", fontSize = 12.sp, color = TextGris)
+
+                Text(
+                    "4 Rte de la Jonelière, 44300 Nantes",
+                    fontSize = 12.sp,
+                    color = TextGris
+                )
+                Spacer(modifier = Modifier.height(8.dp))
 
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Text("🚶 ${ru.distance} à pied", fontSize = 13.sp, color = VertAffluence)
+                    Text(
+                        "🚶 ${ru.distance} à pied",
+                        fontSize = 13.sp,
+                        color = VertAffluence,
+                        fontWeight = FontWeight.Bold
+                    )
                     Box(
                         modifier = Modifier
                             .border(1.dp, BleuPrimaire, RoundedCornerShape(8.dp))
@@ -143,12 +175,12 @@ fun FicheRUScreen(navController: NavController, ruName: String) {
                         Text("Itinéraire →", fontSize = 13.sp, color = BleuPrimaire)
                     }
                 }
-            }
 
-            Divider(color = Color(0xFFE0E0E0))
+                Spacer(modifier = Modifier.height(16.dp))
+                Divider(color = Color(0xFFE0E0E0))
+                Spacer(modifier = Modifier.height(12.dp))
 
-            // ── MENU DU JOUR ──
-            Column(modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)) {
+                // ── MENU DU JOUR ──
                 Text(
                     "🍽 MENU DU JOUR",
                     fontSize = 12.sp,
@@ -156,9 +188,9 @@ fun FicheRUScreen(navController: NavController, ruName: String) {
                     color = TextGris,
                     letterSpacing = 1.sp
                 )
-                Spacer(modifier = Modifier.height(8.dp))
+                Spacer(modifier = Modifier.height(10.dp))
 
-                // Onglets
+                // ── ONGLETS ──
                 Row {
                     onglets.forEach { onglet ->
                         val isSelected = onglet == ongletSelectionne
@@ -189,44 +221,61 @@ fun FicheRUScreen(navController: NavController, ruName: String) {
 
                 Spacer(modifier = Modifier.height(12.dp))
 
-                // Liste plats de l'onglet sélectionné
+                // ── LISTE PLATS ──
                 val plats = menuTrebuchet[ongletSelectionne] ?: emptyList()
                 plats.forEach { plat ->
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(vertical = 8.dp),
+                            .padding(vertical = 10.dp),
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Row(verticalAlignment = Alignment.CenterVertically) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier.weight(1f)
+                        ) {
                             Text(plat.nom, fontSize = 14.sp, color = TextSombre)
                             if (plat.isVegetarien) {
                                 Spacer(modifier = Modifier.width(6.dp))
                                 Box(
                                     modifier = Modifier
-                                        .background(Color(0xFFE8F5E9), RoundedCornerShape(4.dp))
+                                        .background(
+                                            Color(0xFFE8F5E9),
+                                            RoundedCornerShape(4.dp)
+                                        )
                                         .padding(horizontal = 6.dp, vertical = 2.dp)
                                 ) {
-                                    Text("🌿 Végétarien", fontSize = 10.sp, color = VertAffluence)
+                                    Text(
+                                        "🌿 Végétarien",
+                                        fontSize = 10.sp,
+                                        color = VertAffluence
+                                    )
                                 }
                             }
                         }
-                        Text(plat.prix, fontSize = 14.sp, color = BleuPrimaire, fontWeight = FontWeight.Bold)
+                        Text(
+                            plat.prix,
+                            fontSize = 14.sp,
+                            color = BleuPrimaire,
+                            fontWeight = FontWeight.Bold
+                        )
                     }
                     Divider(color = Color(0xFFF0F0F0))
                 }
+
+                Spacer(modifier = Modifier.height(80.dp))
             }
         }
 
-        // ── BOUTON PRÉCOMMANDER ──
+        // ── BOUTON PRÉCOMMANDER FIXE EN BAS ──
         Box(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(16.dp)
         ) {
             Button(
-                onClick = { navController.navigate("filtre") },
+                onClick = { },
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(50.dp),
@@ -239,10 +288,11 @@ fun FicheRUScreen(navController: NavController, ruName: String) {
     }
 }
 
+
 @Composable
 fun JaugesAffluence() {
     val heures = listOf("11h", "12h", "12h30", "13h", "14h")
-    val hauteurs = listOf(30, 50, 70, 90, 40)
+    val hauteurs = listOf(30, 50, 70, 90, 40)  // ← plus hautes
     val couleurs = listOf(
         VertAffluence, VertAffluence, OrangeAffluence, RougeAffluence, VertAffluence
     )
@@ -255,10 +305,14 @@ fun JaugesAffluence() {
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
                 Box(
                     modifier = Modifier
-                        .width(18.dp)
+                        .width(26.dp)   // ← plus larges
                         .height(hauteurs[index].dp)
-                        .background(couleurs[index], RoundedCornerShape(topStart = 4.dp, topEnd = 4.dp))
+                        .background(
+                            couleurs[index],
+                            RoundedCornerShape(topStart = 4.dp, topEnd = 4.dp)
+                        )
                 )
+                Spacer(modifier = Modifier.height(2.dp))
                 Text(heure, fontSize = 8.sp, color = TextGris)
             }
         }
