@@ -60,6 +60,8 @@ val tousLesRU = listOf(
 
 fun filtrerRU(): List<RestaurantRU> {
     var liste = tousLesRU
+
+    // ── FILTRES (exclure) ──────────────────────────────────
     if (FiltreState.chipProximite.value || FiltreState.proximite.value) {
         liste = liste.filter {
             it.distance.replace(" min", "").toIntOrNull() ?: 99 <= 8
@@ -74,5 +76,46 @@ fun filtrerRU(): List<RestaurantRU> {
     if (FiltreState.modere.value) {
         liste = liste.filter { it.affluence != "Bondé" }
     }
+    if (FiltreState.vegetarien.value) {
+        liste = liste.filter { it.affluence != "Bondé" } // adapter si tu ajoutes ce champ
+    }
+
+    // ── TRI (ordre d'affichage) ────────────────────────────
+    liste = when {
+        // Chip Proximité → trier par distance croissante
+        FiltreState.chipProximite.value || FiltreState.proximite.value ->
+            liste.sortedBy {
+                it.distance.replace(" min", "").toIntOrNull() ?: 99
+            }
+
+        // Chip Affluence OU "Moins d'attente" → trier par temps d'attente croissant
+        FiltreState.chipAffluence.value || FiltreState.moinsDattente.value ->
+            liste.sortedBy { ru ->
+                when (ru.affluence) {
+                    "Disponible" -> 1
+                    "Modéré"     -> 2
+                    "Bondé"      -> 3
+                    else         -> 4
+                }
+            }
+
+        // Filtre Faible ou Modéré → trier aussi par attente
+        FiltreState.faible.value || FiltreState.modere.value ->
+            liste.sortedBy { ru ->
+                when (ru.affluence) {
+                    "Disponible" -> 1
+                    "Modéré"     -> 2
+                    "Bondé"      -> 3
+                    else         -> 4
+                }
+            }
+
+        // Favoris → garder ordre par défaut (ou ajouter un champ favori plus tard)
+        FiltreState.favoris.value -> liste
+
+        // Aucun filtre → ordre par défaut
+        else -> liste
+    }
+
     return liste
 }
