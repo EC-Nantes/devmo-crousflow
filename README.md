@@ -49,7 +49,7 @@ git clone https://github.com/EC-Nantes/devmo-crousflow.git
 ## Liens
 
 - 🎨 [Prototype Balsamiq](https://balsamiq.cloud/scvklv6/pjei1o7)
-- 📹 [Vidéo de démonstration](https://drive.google.com/drive/folders/1i-b6-RVPHLVGQ1ZKUrKGqanbT5TuZH5d)
+- 📹 [Vidéo de démonstration](https://drive.google.com/file/d/1JDRBGRJsD_s1eHka6mXp5xI5VYupToi8/view)
 
 ## Auteur
 
